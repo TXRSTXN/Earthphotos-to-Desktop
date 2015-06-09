@@ -1,12 +1,6 @@
 # Reddit desktop photo bot
 
-import requests
-import requests.auth
-import json
-import operator
-import os
-import datetime
-import subprocess
+import requests, json, os, datetime, time, subprocess
 
 def get_access_token(sensitive):
 	client_auth = requests.auth.HTTPBasicAuth(sensitive[0], sensitive[1])
@@ -17,7 +11,7 @@ def get_access_token(sensitive):
     	data = post_data, headers=headers).json()
 	return response['access_token']
 
-def get_top_post(access_token, sensitive, today):
+def get_top_post(access_token, sensitive):
 
 	headers = {"User-Agent": sensitive[4]}
 	headers["Authorization"] = "bearer %s" % access_token
@@ -28,42 +22,58 @@ def get_top_post(access_token, sensitive, today):
 
 	data = [i['data'] for i in response['data']['children']]
 	data = sorted(data, key=lambda x:x['score'], reverse=True)
+	return data
 
-	print "\n\nToday's top post is:"
-	print data[0]['title']
-	print "\nWith a score of: " + str(data[0]['score']) + "\n\n"
+def save_photo_file(data, today):
+	print "Attempting to save file..."
 
-	r = requests.get(data[0]['url'])
+	directory = os.getcwd() + "/photos"
+	if not os.path.exists(directory):
+   		os.makedirs(directory)
 
-	print "Saving to desktop..."
-	
-	filename = os.path.join(os.path.expanduser('~'), "Desktop", "%s.jpg" % today)
+	list_of_filetypes = ["jpg", "jpeg", "gif", "png"]
+
+	for pic in data:
+		filetype = pic['url'].lower().split(".")[-1]	
+		if filetype not in list_of_filetypes:
+			print "Unable to use " + pic['title'] + " due to filetype error."
+		else:
+			try:
+				r = requests.get(pic['url'])
+				print "\n\nUsing " + pic['title']
+				print "With a score of: " + str(data[0]['score']) + "\n\n"
+				break
+			except:
+				print "Unable to use " + pic['title'] + " due to download error."
+			
+	filename = os.getcwd() + "/photos/%s.%s" % (today, filetype)
 
 	with open(filename, 'wb') as photo:
 		photo.write(r.content)
-
-def set_as_desktop(desktops, today):
-
+	return filename
+	
+def set_as_desktop(filename, desktops, today):
 	if desktops > 1:
 		script = """osascript -e 'set N to %d
-			set theFile to POSIX file ((system attribute "HOME") & "/Desktop/%s.jpg")
+			set theFile to POSIX file ("%s")
 			repeat with k from 18 to (18 + N - 1)
 				tell application "System Events" to key code k using {control down}
 				delay 1
 				tell application "Finder" to set desktop picture to theFile
 				delay 1
 			end repeat'
-			""" % (desktops, today)
+			""" % (desktops, filename)
 			
-		print "Setting to all %d of these desktops..." % desktops		
+		print "Setting to all %d of these desktops. Stand back...\n" % desktops		
 
 	elif desktops == 1:
 		# Works for 1 desktop/space
 		script = "osascript -e 'tell application \"Finder\" to set desktop picture to " \
-			"POSIX file ((system attribute \"HOME\") & \"/Desktop/%s.jpg\")'" % today
+			"POSIX file (\"%s\")'" % filename
 	
 		print "Setting to this one and only desktop..."
 	
+	time.sleep(2)
 	subprocess.Popen(script, shell=True)
 
 
@@ -75,11 +85,11 @@ def main():
 	today = datetime.datetime.now().strftime("%d-%y")
 	
 	access_token = get_access_token(sensitive)
-	get_top_post(access_token, sensitive, today)
-
+	data = get_top_post(access_token, sensitive)
+	filename = save_photo_file(data, today)
 	desktops = 4  # Set this int to the number of desktops to set
 	
-	set_as_desktop(desktops, today)	
+	set_as_desktop(filename, desktops, today)	
 
 if __name__ == "__main__":
 	main()
