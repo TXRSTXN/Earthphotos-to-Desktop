@@ -79,7 +79,10 @@ def set_as_desktop(filename, desktops, today):
 
 
 def main():
-	with open("sensitive.txt", "r") as fp:
+	
+	script_directory = os.path.dirname(os.path.realpath(__file__))
+
+	with open(os.path.join(script_directory, "sensitive.txt"), "r") as fp:
 		sensitive = [line.strip("\n") for line in fp]
 	
 	today = datetime.datetime.now().strftime("%d-%y")
