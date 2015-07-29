@@ -7,9 +7,9 @@ In System Preferences, navigate to Keyboard, then Shortcuts. Choose Mission Cont
 Ensure that the "Switch to Desktop #" checkboxes are all turned on.
 Otherwise, only one desktop will get set.
 
-Layout of the 'sensitive.txt' file, line by line:
-  1   client id
-  2   client secret
-  3   username
-  4   password
-  5   app name
+Layout of the 'sensitive.txt' file, line by line:  
+- client id
+- client secret
+- username
+- password
+- app name

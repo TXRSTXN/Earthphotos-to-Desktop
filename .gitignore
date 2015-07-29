@@ -1,5 +1,8 @@
 sensitive.txt
 photos/*
+<<<<<<< HEAD
 dist
 build
 *.spec
+=======
+>>>>>>> origin/master
