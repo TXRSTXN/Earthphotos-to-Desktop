@@ -1,6 +1,6 @@
 # Reddit desktop photo bot
 
-import requests, json, os, datetime, time, subprocess
+import requests, json, os, datetime, time, subprocess, sys
 
 def get_access_token(sensitive):
 	client_auth = requests.auth.HTTPBasicAuth(sensitive[0], sensitive[1])
@@ -81,6 +81,9 @@ def set_as_desktop(filename, desktops, today):
 def main():
 	
 	script_directory = os.path.dirname(os.path.realpath(__file__))
+
+#	with open(os.path.join(script_directory, "log.txt"), "r") as log:
+		
 
 	with open(os.path.join(script_directory, "sensitive.txt"), "r") as fp:
 		sensitive = [line.strip("\n") for line in fp]
